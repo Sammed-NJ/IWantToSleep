@@ -24,6 +24,7 @@ class DaemonRunner:
         self.logs = []
         self.is_running = True
         self.lock = threading.Lock()
+        self.state = None # In-memory state cache to optimize and bypass disk read bottlenecks in 2Hz UI loop
 
     def log(self, message):
         """Add log entry with timestamp."""
@@ -81,6 +82,7 @@ class DaemonRunner:
         state["daemon_pid"] = os.getpid()
         state["daemon_last_seen"] = datetime.now().isoformat()
         alarm_manager.save_state(state)
+        self.state = state # Sync state cache
 
     def check_alarms_worker(self):
         """Background worker that evaluates alarm conditions and controls sound player."""
@@ -90,8 +92,9 @@ class DaemonRunner:
                 # 1. Update heartbeat
                 self.update_heartbeat()
                 
-                # 2. Load latest state
-                state = alarm_manager.load_state()
+                # 2. Load latest state and update in-memory cache
+                self.state = alarm_manager.load_state()
+                state = self.state
                 now = datetime.now()
                 
                 # 3. Handle active ringing alarm state machine
@@ -137,6 +140,7 @@ class DaemonRunner:
                         self.ringing_start_time = None
                         state["active_ringing_id"] = None
                         alarm_manager.save_state(state)
+                        self.state = state # Sync cache after write
                         
                     elif snoozed:
                         snooze_mins = state["snooze_requests"][alarm_id_str]
@@ -157,6 +161,7 @@ class DaemonRunner:
                         self.ringing_start_time = None
                         state["active_ringing_id"] = None
                         alarm_manager.save_state(state)
+                        self.state = state # Sync cache after write
                         
                 else:
                     # Not currently ringing. Check if any alarm should fire.
@@ -184,6 +189,7 @@ class DaemonRunner:
                             self.log(f"Alarm {a['id']} ('{a['label']}') is ringing!")
                             state["active_ringing_id"] = a["id"]
                             alarm_manager.save_state(state)
+                            self.state = state # Sync cache after write
                             
                             # Start playing the sound thread
                             self.player.start(a.get("sound", "classic"))
@@ -220,7 +226,8 @@ class DaemonRunner:
         )
         
         # 2. Body: Digital clock + active alarms list
-        state = alarm_manager.load_state()
+        # Optimization: Use memory-cached state from the checking loop rather than hitting disk 2 times per second
+        state = self.state if self.state is not None else alarm_manager.load_state()
         
         body_layout = Layout()
         body_layout.split_row(
