@@ -35,6 +35,9 @@ To fulfill the *"no database"* and *"CLI only"* constraint while retaining decou
 ### 4. Windows Compatibility & Robustness
 During local testing, standard Unicode emojis caused `UnicodeEncodeError` crashes on default Windows PowerShell/CMD environments (which use CP1252 encoding). Emojis were replaced with standard ASCII indicators to ensure 100% crash-free out-of-the-box performance on Windows machines.
 
+### 5. In-Memory State Caching (Performance Optimization)
+To prevent disk read bottlenecks in the 2Hz (every 0.5 seconds) terminal dashboard refresh loop, we implemented an in-memory caching system. The worker thread updates `self.state` during its 1-second checking phase, and the rendering thread reads directly from memory. This reduces file system reads by up to 66% without compromising responsiveness.
+
 ---
 
 ## ⚙️ Setup & Installation

@@ -83,6 +83,7 @@ This document records the step-by-step implementation of the `iwts` CLI alarm cl
 - Verified alarm toggling (`python iwts.py disable 2`) to ensure correctness.
 - Added a `clear` command to safely wipe all configured alarms at once. Implemented `clear_all_alarms` in `alarm_manager.py` and registered the subparser command handler in `iwts.py`.
 - Added a `config` command to view and update application settings. Custom default snooze times and alarm timeouts are saved to state. The snooze client reads these settings when executing, and the daemon uses the configured timeout to stop ringing.
+- Optimized daemon execution performance by introducing in-memory state caching. The dashboard refresh cycle now bypasses redundant JSON parsing disk reads.
 - App completed with all features operational.
 
 
