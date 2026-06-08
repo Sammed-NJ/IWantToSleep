@@ -86,6 +86,7 @@ python iwts.py ls
 python iwts.py disable <alarm_id>
 python iwts.py enable <alarm_id>
 python iwts.py delete <alarm_id>   # or: python iwts.py rm <alarm_id>
+python iwts.py clear               # Deletes all alarms at once
 ```
 
 #### Dismiss or Snooze a Ringing Alarm

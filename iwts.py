@@ -128,6 +128,11 @@ def handle_delete(args):
     else:
         console.print(f"[bold red]Error:[/] Alarm #{args.id} not found.")
 
+def handle_clear(args):
+    """Delete all configured alarms."""
+    alarm_manager.clear_all_alarms()
+    console.print("[bold green]Success![/] All alarms have been deleted.")
+
 def handle_enable(args):
     """Enable an alarm."""
     if alarm_manager.set_alarm_enabled(args.id, True):
@@ -257,6 +262,9 @@ def main():
     # Status command
     subparsers.add_parser("status", help="Show daemon status and quick diagnostics")
 
+    # Clear command
+    subparsers.add_parser("clear", help="Delete all configured alarms")
+
     args = parser.parse_args()
 
     # Routing commands
@@ -265,6 +273,7 @@ def main():
         "add": handle_add,
         "list": handle_list,
         "delete": handle_delete,
+        "clear": handle_clear,
         "enable": handle_enable,
         "disable": handle_disable,
         "dismiss": handle_dismiss,

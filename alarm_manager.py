@@ -265,8 +265,12 @@ def set_alarm_enabled(alarm_id, enabled):
         save_state(state)
     return found
 
-def get_active_alarm_ringing():
-    """Check if any alarm is currently in the ringing state."""
-    # Note: Daemon manages ringing state locally or updates state.
-    # To keep code simple, the daemon will flag when an alarm starts ringing.
-    pass
+def clear_all_alarms():
+    """Delete all configured alarms from the state file."""
+    state = load_state()
+    state["alarms"] = []
+    state["dismiss_requests"] = []
+    state["snooze_requests"] = {}
+    state["active_ringing_id"] = None
+    save_state(state)
+    return True
