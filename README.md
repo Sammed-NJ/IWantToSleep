@@ -93,7 +93,17 @@ python iwts.py clear               # Deletes all alarms at once
 When an alarm is ringing, run:
 ```bash
 python iwts.py dismiss     # Silences the alarm immediately
-python iwts.py snooze      # Delays the alarm for 5 mins (or custom: --mins 10)
+python iwts.py snooze      # Delays the alarm by default duration (or custom: --mins 10)
+```
+
+#### Application Settings Configuration
+To view or customize application defaults:
+```bash
+# View current default settings
+python iwts.py config
+
+# Update defaults (e.g. 10m snooze, 60s ring timeout)
+python iwts.py config --snooze 10 --timeout 60
 ```
 
 ---

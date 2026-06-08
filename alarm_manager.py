@@ -16,38 +16,41 @@ DAY_MAP = {
     "sun": 6, "sunday": 6
 }
 
+DEFAULT_SETTINGS = {
+    "default_snooze_mins": 5,
+    "alarm_timeout_secs": 120
+}
+
 def load_state():
     """Load the state from the JSON file, or return a default state."""
+    default_state = {
+        "alarms": [],
+        "daemon_pid": None,
+        "daemon_last_seen": None,
+        "dismiss_requests": [],
+        "snooze_requests": {},
+        "settings": DEFAULT_SETTINGS.copy()
+    }
     if not os.path.exists(STATE_FILE):
-        return {
-            "alarms": [],
-            "daemon_pid": None,
-            "daemon_last_seen": None,
-            "dismiss_requests": [],
-            "snooze_requests": {}
-        }
+        return default_state
     try:
         with open(STATE_FILE, "r") as f:
             state = json.load(f)
             # Ensure all required keys exist
-            for key in ["alarms", "daemon_pid", "daemon_last_seen", "dismiss_requests", "snooze_requests"]:
+            for key in default_state:
                 if key not in state:
-                    if key in ["dismiss_requests", "alarms"]:
-                        state[key] = []
-                    elif key == "snooze_requests":
-                        state[key] = {}
-                    else:
-                        state[key] = None
+                    state[key] = default_state[key]
+            # Ensure nested settings keys exist
+            if not isinstance(state["settings"], dict):
+                state["settings"] = DEFAULT_SETTINGS.copy()
+            else:
+                for skey in DEFAULT_SETTINGS:
+                    if skey not in state["settings"]:
+                        state["settings"][skey] = DEFAULT_SETTINGS[skey]
             return state
     except (json.JSONDecodeError, IOError):
         # If file is corrupted or unreadable, return default
-        return {
-            "alarms": [],
-            "daemon_pid": None,
-            "daemon_last_seen": None,
-            "dismiss_requests": [],
-            "snooze_requests": {}
-        }
+        return default_state
 
 def save_state(state):
     """Save state to the JSON file safely."""
@@ -274,3 +277,13 @@ def clear_all_alarms():
     state["active_ringing_id"] = None
     save_state(state)
     return True
+
+def update_settings(snooze_mins=None, timeout_secs=None):
+    """Update configured default values."""
+    state = load_state()
+    if snooze_mins is not None:
+        state["settings"]["default_snooze_mins"] = snooze_mins
+    if timeout_secs is not None:
+        state["settings"]["alarm_timeout_secs"] = timeout_secs
+    save_state(state)
+    return state["settings"]

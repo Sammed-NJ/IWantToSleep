@@ -181,11 +181,15 @@ def handle_snooze(args):
             console.print("[bold red]Error:[/] No alarm is currently ringing.")
             return
 
+    snooze_mins = args.mins
+    if snooze_mins is None:
+        snooze_mins = state.get("settings", {}).get("default_snooze_mins", 5)
+
     alarm_id_str = str(alarm_id)
     # Add to snooze requests
-    state["snooze_requests"][alarm_id_str] = args.mins
+    state["snooze_requests"][alarm_id_str] = snooze_mins
     alarm_manager.save_state(state)
-    console.print(f"[bold green]Requested snooze[/] of {args.mins} minutes for alarm #{alarm_id}.")
+    console.print(f"[bold green]Requested snooze[/] of {snooze_mins} minutes for alarm #{alarm_id}.")
     if not is_daemon_active():
         console.print("[dim]Note: Daemon is not running. Snooze will apply once daemon starts.[/]")
 
@@ -206,6 +210,22 @@ def handle_status(args):
         f"Currently Ringing: [bold red]{state.get('active_ringing_id') or 'None'}[/]",
         title="System Status",
         border_style=status_color
+    ))
+
+def handle_config(args):
+    """View or edit configuration settings."""
+    if args.snooze is not None or args.timeout is not None:
+        settings = alarm_manager.update_settings(snooze_mins=args.snooze, timeout_secs=args.timeout)
+        console.print("[bold green]Success![/] Configuration updated.")
+    else:
+        state = alarm_manager.load_state()
+        settings = state.get("settings", {})
+        
+    console.print(Panel(
+        f"Default Snooze Duration: [bold yellow]{settings.get('default_snooze_mins', 5)} minutes[/]\n"
+        f"Alarm Ring Auto-Timeout: [bold yellow]{settings.get('alarm_timeout_secs', 120)} seconds[/]",
+        title="Global Application Settings",
+        border_style="cyan"
     ))
 
 def main():
@@ -257,13 +277,18 @@ def main():
     # Snooze command
     parser_snooze = subparsers.add_parser("snooze", help="Snooze a currently ringing alarm")
     parser_snooze.add_argument("id", type=int, nargs="?", default=None, help="Specific alarm ID to snooze (optional)")
-    parser_snooze.add_argument("-m", "--mins", type=int, default=5, help="Snooze duration in minutes (default: 5)")
+    parser_snooze.add_argument("-m", "--mins", type=int, default=None, help="Snooze duration in minutes (default: configured value)")
 
     # Status command
     subparsers.add_parser("status", help="Show daemon status and quick diagnostics")
 
     # Clear command
     subparsers.add_parser("clear", help="Delete all configured alarms")
+
+    # Config command
+    parser_cfg = subparsers.add_parser("config", help="View or modify application settings")
+    parser_cfg.add_argument("--snooze", type=int, help="Default snooze time (minutes)")
+    parser_cfg.add_argument("--timeout", type=int, help="Default alarm ring timeout (seconds)")
 
     args = parser.parse_args()
 
@@ -278,7 +303,8 @@ def main():
         "disable": handle_disable,
         "dismiss": handle_dismiss,
         "snooze": handle_snooze,
-        "status": handle_status
+        "status": handle_status,
+        "config": handle_config
     }
 
     if args.command in command_map:

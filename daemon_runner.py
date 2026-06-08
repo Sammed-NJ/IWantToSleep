@@ -105,8 +105,9 @@ class DaemonRunner:
                     # Check for snooze request
                     snoozed = alarm_id_str in state.get("snooze_requests", {})
                     
-                    # Check for timeout (ringing for > 2 minutes)
-                    timeout = (now - self.ringing_start_time).total_seconds() > 120
+                    # Check for timeout (based on configured alarm_timeout_secs)
+                    timeout_limit = state.get("settings", {}).get("alarm_timeout_secs", 120)
+                    timeout = (now - self.ringing_start_time).total_seconds() > timeout_limit
                     
                     if dismissed or timeout:
                         reason = "timeout" if timeout else "dismissed"
