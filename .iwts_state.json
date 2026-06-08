@@ -1,0 +1,38 @@
+{
+  "alarms": [
+    {
+      "id": 2,
+      "time": "+1m",
+      "hour": 22,
+      "minute": 42,
+      "label": "Test 2",
+      "sound": "retro",
+      "repeat": [],
+      "is_relative": true,
+      "enabled": false,
+      "snoozed_until": null,
+      "next_trigger": "2026-06-08T22:42:59",
+      "last_triggered": null
+    },
+    {
+      "id": 3,
+      "time": "08:30",
+      "hour": 8,
+      "minute": 30,
+      "label": "Wake Up!",
+      "sound": "classic",
+      "repeat": [
+        "weekdays"
+      ],
+      "is_relative": false,
+      "enabled": true,
+      "snoozed_until": null,
+      "next_trigger": "2026-06-09T08:30:00",
+      "last_triggered": null
+    }
+  ],
+  "daemon_pid": null,
+  "daemon_last_seen": null,
+  "dismiss_requests": [],
+  "snooze_requests": {}
+}
