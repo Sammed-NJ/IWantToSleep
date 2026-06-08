@@ -2,6 +2,8 @@
 
 A premium, highly interactive, and robust Python CLI alarm clock. 
 
+![Dashboard UI](./dashboard.png)
+
 This application was engineered during a 30-minute coding exercise to showcase senior-level architectural design, decoupled system communication, problem definition, and iterative validation.
 
 ---
