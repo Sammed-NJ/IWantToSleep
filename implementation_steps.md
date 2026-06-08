@@ -81,6 +81,7 @@ This document records the step-by-step implementation of the `iwts` CLI alarm cl
 - Verified list command output formatting and correct display of next trigger timestamps.
 - Checked alarm removal command (`python iwts.py rm 1`) to ensure ID adjustment and state clearing.
 - Verified alarm toggling (`python iwts.py disable 2`) to ensure correctness.
+- Added a `clear` command to safely wipe all configured alarms at once. Implemented `clear_all_alarms` in `alarm_manager.py` and registered the subparser command handler in `iwts.py`.
 - App completed with all features operational.
 
 
